@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GameOrbit</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f1117;
+      color: white;
+    }
+
+    header {
+      padding: 20px;
+      text-align: center;
+      background: #151826;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .search {
+      display: flex;
+      justify-content: center;
+      padding: 15px;
+    }
+
+    .search input {
+      width: 60%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1b2030;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+
+    .card h3 {
+      font-size: 14px;
+      margin: 10px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+    }
+
+    .modal-content {
+      width: 90%;
+      height: 90%;
+      margin: 3% auto;
+      background: #111;
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .close {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>🎮 GameOrbit</header>
+
+<div class="search">
+  <input type="text" id="search" placeholder="Search games...">
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeGame()">✖</span>
+    <iframe id="gameFrame"></iframe>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://www.classroom84x.xyz/pull.json"; 
+
+let games = [];
+
+async function fetchGames() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+
+    games = data.map(g => ({
+      title: g.title || g.name || "Untitled Game",
+      img: g.thumb || g.thumbnail || g.image || "",
+      url: g.url || g.link || g.embed || ""
+    }));
+
+    loadGames(games);
+
+  } catch (err) {
+    console.error("Feed failed:", err);
+    grid.innerHTML = "<p style='padding:20px'>Failed to load games.</p>";
+  }
+}
+
+const grid = document.getElementById("grid");
+
+function loadGames(list) {
+  grid.innerHTML = "";
+
+  list.forEach(game => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.onclick = () => openGame(game.url);
+
+    div.innerHTML = `
+      <img src="${game.img}" onerror="this.src='https://via.placeholder.com/300x200'" />
+      <h3>${game.title}</h3>
+    `;
+
+    grid.appendChild(div);
+  });
+}
+
+function openGame(url) {
+  if (!url) return alert("No game link available");
+  document.getElementById("gameFrame").src = url;
+  document.getElementById("modal").style.display = "block";
+}
+
+function closeGame() {
+  document.getElementById("modal").style.display = "none";
+  document.getElementById("gameFrame").src = "";
+}
+
+document.getElementById("search").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  loadGames(games.filter(g => g.title.toLowerCase().includes(q)));
+});
+
+fetchGames();
+</script>
+
+</body>
+</html>
