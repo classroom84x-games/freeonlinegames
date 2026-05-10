@@ -148,7 +148,10 @@ function loadGames(list) {
   list.forEach(game => {
     const div = document.createElement("div");
     div.className = "card";
-    div.onclick = () => openGame(game.url);
+    div.onclick = () => {
+  const slug = game.title.toLowerCase().replace(/\s+/g, "-");
+  window.location.href = `/game.html?id=${slug}`;
+};
 
     div.innerHTML = `
       <img src="${game.img}" onerror="this.src='https://via.placeholder.com/300x200'" />
